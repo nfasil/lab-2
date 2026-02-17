@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+        <link rel="stylesheet" href="style.css">
+        <title> Lab 1: Naomi Fasil </title>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Lab 1: Build-a-keyboard</h1>
+                <h4>Naomi Fasil || naf2135</h4>
+                <p>a few fun hidden note triggers :) </p>
+            </div>
+            <div class="keyboard"></div>
+            <div class="controls">
+                <div class="waveform-selector">
+                    <span>Current waveform: </span>
+                    <select name="waveform">
+                    <option value="sine" selected>Sine</option>
+                    <option value="square">Square</option>
+                    <option value="sawtooth">Sawtooth</option>
+                    <option value="triangle">Triangle</option>
+                    </select>
+                </div>
+                    <label>
+                        <input type="checkbox" id="mcr-toggle" checked> Enable Note Triggers
+                    </label>
+                <button id="stop-song" class="stop-btn">Stop Song</button>
+            </div>
+        </div>        
+    </body>
+    <script src="main.js"></script>
+</html>
