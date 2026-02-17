@@ -83,14 +83,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     buildKeyboardVisualizer();
 
-    const stopButton = document.getElementById('stop-song');
-
-    stopButton.addEventListener('click', () => {
-        stopAllExternalMusic();
-        console.log("All external music silenced.");
-    });
-
-
     window.addEventListener('keydown', keyDown, false);
     window.addEventListener('keyup', keyUp, false);
 
@@ -162,21 +154,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         const data = noteData[key];
         if (!data) return;
 
-        if (key === '82' && mcrToggle.checked) {
-            rickRoll.currentTime = 0; 
-            rickRoll.play();
-        }
-
-        if (key === '84' && mcrToggle.checked) {
-            blackParade.currentTime = 0; 
-            blackParade.play();
-        }
-            
-        if (key === '86' && mcrToggle.checked) {
-            lionKing.currentTime = 0; 
-            lionKing.play();
-        }
-
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const type = wavePicker.options[wavePicker.selectedIndex].value;
@@ -193,26 +170,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         osc.start();
        
         activeOscillators[key] = {osc: osc, gain: noteGain}
-        updateBackground();
     }
-
-    function updateBackground() {
-        const activeKeys = Object.keys(activeOscillators);
-        const body = document.body;
-
-        if (activeKeys.length === 0) {
-            body.style.background = "#ffffff";
-            return;
-        }
-
-        const colors = activeKeys.map(key => noteData[key].color);
-
-        if (colors.length === 1) {
-            body.style.background = colors[0];
-        } else {
-            body.style.background = `linear-gradient(135deg, ${colors.join(', ')})`;
-        }
-    }    
 
     function stopAllExternalMusic() {
         triggerSongs.forEach(song => {
