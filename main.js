@@ -2,13 +2,6 @@ const keyboard = document.querySelector(".keyboard");
 const wavePicker = document.querySelector("select[name='waveform']");
 const MAX_POLYPHONY = 5;
 const NOTE_MAX_GAIN = 1 / MAX_POLYPHONY;
-const mcrToggle = document.getElementById('mcr-toggle');
-
-const blackParade = new Audio('audios/mcr_audio.mp3');
-const lionKing = new Audio('audios/lion_king.mp3');
-const rickRoll = new Audio('audios/rick_roll.mp3')
-const triggerSongs = [blackParade, lionKing, rickRoll];
-triggerSongs.forEach(song => { song.volume = 0.5 });
 
 let audioCtx;
 let globalGain;
@@ -171,12 +164,5 @@ document.addEventListener("DOMContentLoaded", function(event) {
        
         activeOscillators[key] = {osc: osc, gain: noteGain}
     }
-
-    function stopAllExternalMusic() {
-        triggerSongs.forEach(song => {
-            song.pause();
-            song.currentTime = 0;
-        });
-    }    
 
 })
