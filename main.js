@@ -8,7 +8,6 @@ let globalGain;
 let activeOscillators = {};
 
 
-
 document.addEventListener("DOMContentLoaded", function(event) {
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -95,6 +94,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         release: 0.1
     }    
 
+    const partials = [
+        { freqMultiplier: 1, amp: 0.5 }, // fundamental
+        { freqMultiplier: 2, amp: 0.3 }, // 2nd partial
+        { freqMultiplier: 3, amp: 0.1 }, // 3rd partial
+        { freqMultiplier: 4, amp: 0.05 }, // 4th partial
+    ];
+
+
     function keyDown(event) {
         console.log("key pressed: " + event.key)
         const key = (event.detail || event.which).toString();
@@ -111,16 +118,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         const keyEl = keyboard.querySelector(`[data-keycode="${key}"]`);
         if (keyEl) keyEl.classList.remove('pressed');
         if (activeOscillators[key]) {
-            const now = audioCtx.currentTime;
-            const note = activeOscillators[key];
-            
-            note.gain.gain.cancelScheduledValues(now);
-            note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-            note.gain.gain.exponentialRampToValueAtTime(0.001, now + adsr.release);
-            
-            note.osc.stop(now + adsr.release);
-            delete activeOscillators[key];
-            updateBackground();
+            stopNote(key);
         }
     }
 
@@ -133,13 +131,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
             note.gain.gain.setValueAtTime(note.gain.gain.value, now);
             note.gain.gain.exponentialRampToValueAtTime(0.001, now + adsr.release);
             
-            note.osc.stop(now + adsr.release);
+            note.oscs.forEach(osc => {
+                osc.stop(now + adsr.release);
+            });
+
             delete activeOscillators[key];
 
             const keyEl = keyboard.querySelector(`[data-keycode="${key}"]`);
             if (keyEl) keyEl.classList.remove('pressed');
-            
-            updateBackground();
         }
     }
 
@@ -147,22 +146,39 @@ document.addEventListener("DOMContentLoaded", function(event) {
         const data = noteData[key];
         if (!data) return;
 
+        /* adsr envelope for all notes */
         const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const type = wavePicker.options[wavePicker.selectedIndex].value;
-        osc.frequency.setValueAtTime(data.freq, now);
-        osc.type = type 
+        // const osc = audioCtx.createOscillator();
+        // const type = wavePicker.options[wavePicker.selectedIndex].value;
+        // osc.frequency.setValueAtTime(data.freq, now);
+        // osc.type = type 
 
         const noteGain = audioCtx.createGain();
         noteGain.gain.setValueAtTime(0, now);
         noteGain.gain.linearRampToValueAtTime(NOTE_MAX_GAIN, now + adsr.attack);
         noteGain.gain.exponentialRampToValueAtTime(adsr.sustain * NOTE_MAX_GAIN + 0.001, now + adsr.attack + adsr.decay);
-
-        osc.connect(noteGain);
+        // osc.connect(noteGain);
         noteGain.connect(globalGain);
-        osc.start();
+        
+        /* track oscillators for this note */
+        const oscillators = []
+        // additive synthesis
+        partials.forEach(partial => {
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain(); 
+
+                osc.type = 'sine'; 
+                osc.frequency.setValueAtTime(data.freq * partial.freqMultiplier, now);
+                oscGain.gain.setValueAtTime(partial.amp, now);
+                
+                osc.connect(oscGain);
+                oscGain.connect(noteGain); 
+                
+                osc.start();
+                oscillators.push(osc);
+            });        
        
-        activeOscillators[key] = {osc: osc, gain: noteGain}
+        activeOscillators[key] = {oscs: oscillators, gain: noteGain}
     }
 
 })
