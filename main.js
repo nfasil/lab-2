@@ -1,5 +1,5 @@
 const keyboard = document.querySelector(".keyboard");
-const wavePicker = document.querySelector("select[name='mode']");
+const modePicker = document.querySelector("select[name='mode']");
 const MAX_POLYPHONY = 5;
 const NOTE_MAX_GAIN = 1 / MAX_POLYPHONY;
 
@@ -167,6 +167,25 @@ document.addEventListener("DOMContentLoaded", function(event) {
     document.getElementById('partialCount').addEventListener('input', updatePartialSliders);
     updatePartialSliders();
 
+    function updateControls() {
+        const selectedMode = modePicker.value;
+        const groups = document.querySelectorAll('.mode-dependent');
+
+        groups.forEach(group => {
+            if (group.dataset.mode === selectedMode) {
+                group.classList.add('active');
+            } else {
+                group.classList.remove('active');
+            }
+        });
+
+        if (selectedMode === 'additive') {
+            updatePartialSliders(); 
+        }
+    }
+    modePicker.addEventListener('change', updateControls);
+    document.getElementById('partialCount').addEventListener('input', updateControls);
+    updateControls();
 
     function playNote(key) {
         const data = noteData[key];
@@ -179,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         const numPartials = parseInt(document.getElementById('partialCount').value);
 
         const now = audioCtx.currentTime;
-        const mode = wavePicker.value;
+        const mode = modePicker.value;
 
         /* adsr envelope for all notes */
         const noteGain = audioCtx.createGain();
@@ -221,8 +240,34 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     oscillators.push(osc);
                 });
                 break;
+
+            case 'am':
+                const carrier = audioCtx.createOscillator();
+                const modulatorFreq = audioCtx.createOscillator();
+                const modulated = audioCtx.createGain(); 
+                const depth = audioCtx.createGain();
                 
-    
+                carrier.type = 'sine'; 
+                modulatorFreq.type = 'triangle'; 
+
+                const mRatio = parseFloat(document.getElementById('amModFreq').value);
+                const mDepthValue = parseFloat(document.getElementById('amDepth').value);
+
+                carrier.frequency.setValueAtTime(data.freq, now);
+                modulatorFreq.frequency.setValueAtTime(data.freq * mRatio, now); 
+
+                depth.gain.setValueAtTime(mDepthValue, now); 
+                modulated.gain.setValueAtTime(1.0 - mDepthValue, now); 
+
+                modulatorFreq.connect(depth).connect(modulated.gain);
+                carrier.connect(modulated);
+                modulated.connect(noteGain);
+
+                carrier.start();
+                modulatorFreq.start();
+
+                oscillators.push(carrier, modulatorFreq);
+                break;
         }        
        
         activeOscillators[key] = {

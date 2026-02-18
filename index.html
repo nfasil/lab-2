@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class="vertical-line"></div>
-                <div class="control-group partial-controls">
+                <div class="control-group partial-controls mode-dependent" data-mode="additive">
                     <div> 
                         <label for="partialCount">Number of Partials:</label>
                         <input type="number" id="partialCount" min="1" max="20" value="4">
@@ -54,6 +54,16 @@
                         <div id="partialSlidersContainer" class="slider-grid"></div>
                     </div>
                 </div>
+                <div class="control-group am-controls mode-dependent" data-mode="am">
+                    <div class="slider-wrapper">
+                        <label>Modulation Frequency</label>
+                        <input type="range" id="amModFreq" min="0.1" max="10" step="0.1" value="1.0">
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Modulation Depth</label>
+                        <input type="range" id="amDepth" min="0" max="1" step="0.01" value="0.5">
+                    </div>
+    </div>
                
                 
             </div>
