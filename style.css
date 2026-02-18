@@ -16,6 +16,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     width: max-content;
     gap: 10px;
     
@@ -94,7 +95,7 @@ p {
 }
 
 
-.waveform-selector {
+.mode-selector {
     width: auto;
     right: 0;
     display: table-cell;
@@ -110,10 +111,48 @@ p {
 }
 
 .controls {
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.adsr-controls {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    padding-top: 15px;
-    gap: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    text-align: center;
+}
 
+.slider-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.vertical-line {
+  border-left: 1px solid rgb(206, 206, 206); /* Creates the vertical line */
+  height: 100px;                /* Sets the length of the line */
+  margin: 0 20px;               /* Adds spacing around the line */
+}
+
+.partial-slider-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.partial-controls {
+    display: flex;
+    flex-direction: column;
 }

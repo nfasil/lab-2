@@ -1,5 +1,5 @@
 const keyboard = document.querySelector(".keyboard");
-const wavePicker = document.querySelector("select[name='waveform']");
+const wavePicker = document.querySelector("select[name='mode']");
 const MAX_POLYPHONY = 5;
 const NOTE_MAX_GAIN = 1 / MAX_POLYPHONY;
 
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     globalGain = audioCtx.createGain();
-    globalGain.gain.setValueAtTime(0.6, audioCtx.currentTime)
+    globalGain.gain.setValueAtTime(0.7, audioCtx.currentTime)
     globalGain.connect(audioCtx.destination);
 
     const noteData = {
@@ -126,13 +126,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
         if (activeOscillators[key]) {
             const now = audioCtx.currentTime;
             const note = activeOscillators[key];
+
+            const releaseTime = note.release || 0.1;
             
             note.gain.gain.cancelScheduledValues(now);
             note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-            note.gain.gain.exponentialRampToValueAtTime(0.001, now + adsr.release);
+            note.gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
             
             note.oscs.forEach(osc => {
-                osc.stop(now + adsr.release);
+                osc.stop(now + releaseTime);
             });
 
             delete activeOscillators[key];
@@ -142,43 +144,92 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
     }
 
+    function updatePartialSliders() {
+        const container = document.getElementById('partialSlidersContainer');
+        const numPartials = parseInt(document.getElementById('partialCount').value);
+        container.innerHTML = '';
+
+        for (let i = 1; i <= numPartials; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'partial-slider-wrapper';
+            
+            const defaultValue = (1 / i).toFixed(2);
+            
+            wrapper.innerHTML = `
+                <span>P${i}</span>
+                <input type="range" class="partial-amp" data-index="${i}" 
+                    min="0" max="1" step="0.01" value="${defaultValue}">
+            `;
+            container.appendChild(wrapper);
+        }
+    }
+
+    document.getElementById('partialCount').addEventListener('input', updatePartialSliders);
+    updatePartialSliders();
+
+
     function playNote(key) {
         const data = noteData[key];
         if (!data) return;
 
-        /* adsr envelope for all notes */
-        const now = audioCtx.currentTime;
-        // const osc = audioCtx.createOscillator();
-        // const type = wavePicker.options[wavePicker.selectedIndex].value;
-        // osc.frequency.setValueAtTime(data.freq, now);
-        // osc.type = type 
+        const uiAttack = parseFloat(document.getElementById('attack').value);
+        const uiDecay = parseFloat(document.getElementById('decay').value);
+        const uiSustain = parseFloat(document.getElementById('sustain').value);
+        const uiRelease = parseFloat(document.getElementById('release').value);
+        const numPartials = parseInt(document.getElementById('partialCount').value);
 
+        const now = audioCtx.currentTime;
+        const mode = wavePicker.value;
+
+        /* adsr envelope for all notes */
         const noteGain = audioCtx.createGain();
         noteGain.gain.setValueAtTime(0, now);
-        noteGain.gain.linearRampToValueAtTime(NOTE_MAX_GAIN, now + adsr.attack);
-        noteGain.gain.exponentialRampToValueAtTime(adsr.sustain * NOTE_MAX_GAIN + 0.001, now + adsr.attack + adsr.decay);
-        // osc.connect(noteGain);
+        noteGain.gain.linearRampToValueAtTime(NOTE_MAX_GAIN, now + uiAttack);
+        noteGain.gain.exponentialRampToValueAtTime(uiSustain * NOTE_MAX_GAIN + 0.001, now + uiAttack + uiDecay);
         noteGain.connect(globalGain);
         
         /* track oscillators for this note */
         const oscillators = []
-        // additive synthesis
-        partials.forEach(partial => {
-                const osc = audioCtx.createOscillator();
-                const oscGain = audioCtx.createGain(); 
+        
+        switch(mode) {
+            case 'additive':
+                const sliderInputs = document.querySelectorAll('.partial-amp');
+                let amps = [];
+                let totalAmplitudeSum = 0;
 
-                osc.type = 'sine'; 
-                osc.frequency.setValueAtTime(data.freq * partial.freqMultiplier, now);
-                oscGain.gain.setValueAtTime(partial.amp, now);
+                sliderInputs.forEach(input => {
+                    const val = parseFloat(input.value);
+                    amps.push(val);
+                    totalAmplitudeSum += val;
+                });
+
+                if (totalAmplitudeSum === 0) totalAmplitudeSum = 0.95;
+
+                amps.forEach((amp, index) => {
+                    const n = index + 1;
+                    const osc = audioCtx.createOscillator();
+                    const oscGain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(data.freq * n, now);
+                    
+                    const normalizedAmp = amp / totalAmplitudeSum;
+                    oscGain.gain.setValueAtTime(normalizedAmp, now);
+
+                    osc.connect(oscGain);
+                    oscGain.connect(noteGain);
+                    osc.start();
+                    oscillators.push(osc);
+                });
+                break;
                 
-                osc.connect(oscGain);
-                oscGain.connect(noteGain); 
-                
-                osc.start();
-                oscillators.push(osc);
-            });        
+    
+        }        
        
-        activeOscillators[key] = {oscs: oscillators, gain: noteGain}
+        activeOscillators[key] = {
+            oscs: oscillators, 
+            gain: noteGain,
+            release: uiRelease
+        }
     }
 
 })

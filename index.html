@@ -4,27 +4,58 @@
         <meta charset="utf-8">
         <link rel="icon" href="data:;base64,iVBORw0KGgo=">
         <link rel="stylesheet" href="style.css">
-        <title> Lab 1: Naomi Fasil </title>
+        <title> Lab 2: Naomi Fasil </title>
     </head>
 
     <body>
         <div class="container">
             <div class="header">
-                <h1>Lab 1: Build-a-keyboard</h1>
+                <h1>Lab 2: Build-a-synth</h1>
                 <h4>Naomi Fasil || naf2135</h4>
-                <p>a few fun hidden note triggers :) </p>
             </div>
             <div class="keyboard"></div>
             <div class="controls">
-                <div class="waveform-selector">
-                    <span>Current waveform: </span>
-                    <select name="waveform">
-                    <option value="sine" selected>Sine</option>
-                    <option value="square">Square</option>
-                    <option value="sawtooth">Sawtooth</option>
-                    <option value="triangle">Triangle</option>
-                    </select>
+                <div class="control-group">
+                    <div class="mode-selector">
+                        <span>Current mode: </span>
+                        <select name="mode">
+                            <option value="additive" selected >Additive Synthesis</option>
+                            <option value="am" >AM Synthesis</option>
+                        </select>
+                    </div>
                 </div>
+                <div class="vertical-line"></div>
+                <div class="control-group adsr-controls">
+                    <div class="slider-wrapper">
+                        <label>Attack</label>
+                        <input type="range" id="attack" min="0.01" max="2" step="0.01" value="0.05">
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Decay</label>
+                        <input type="range" id="decay" min="0.01" max="2" step="0.01" value="0.2">
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Sustain</label>
+                        <input type="range" id="sustain" min="0" max="1" step="0.01" value="0.3">
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Release</label>
+                        <input type="range" id="release" min="0.01" max="2" step="0.01" value="0.1">
+                    </div>
+                </div>
+                <div class="vertical-line"></div>
+                <div class="control-group partial-controls">
+                    <div> 
+                        <label for="partialCount">Number of Partials:</label>
+                        <input type="number" id="partialCount" min="1" max="20" value="4">
+                    </div>
+                     <div>
+                        <label>Partial Mixer:</label>
+                        <div id="partialSlidersContainer" class="slider-grid"></div>
+                    </div>
+                </div>
+               
+                
             </div>
         </div>        
     </body>
