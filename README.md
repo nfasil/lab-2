@@ -8,7 +8,6 @@
 
 ### User controls
 users can control some parameter of modes of synthesis. ie:
-- mix between synthesis methods
 - \# partials to add in additive synthesis
 - value of modulation frequency
 - ADSR envelope
