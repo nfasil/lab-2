@@ -87,21 +87,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     activeOscillators = {}
 
-    const adsr = {
-        attack: 0.05,
-        decay: 0.2,
-        sustain: 0.30,
-        release: 0.1
-    }    
-
-    const partials = [
-        { freqMultiplier: 1, amp: 0.5 }, // fundamental
-        { freqMultiplier: 2, amp: 0.3 }, // 2nd partial
-        { freqMultiplier: 3, amp: 0.1 }, // 3rd partial
-        { freqMultiplier: 4, amp: 0.05 }, // 4th partial
-    ];
-
-
     function keyDown(event) {
         console.log("key pressed: " + event.key)
         const key = (event.detail || event.which).toString();
@@ -253,9 +238,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
                 const mRatio = parseFloat(document.getElementById('amModFreq').value);
                 const mDepthValue = parseFloat(document.getElementById('amDepth').value);
+                const isLFO = document.getElementById('amLFO').checked;
 
                 carrier.frequency.setValueAtTime(data.freq, now);
-                modulatorFreq.frequency.setValueAtTime(data.freq * mRatio, now); 
+                if (isLFO) {
+                    modulatorFreq.frequency.setValueAtTime(10, now); 
+                } else {
+                    modulatorFreq.frequency.setValueAtTime(data.freq * mRatio, now); 
+                }
 
                 depth.gain.setValueAtTime(mDepthValue, now); 
                 modulated.gain.setValueAtTime(1.0 - mDepthValue, now); 
