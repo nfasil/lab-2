@@ -162,6 +162,11 @@ p {
     flex-direction: column;    
 }
 
+.fm-controls {
+    display: flex;
+    flex-direction: column;    
+}
+
 .mode-dependent {
     display: none !important;
 }

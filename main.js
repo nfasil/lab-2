@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         const oscillators = []
         
         switch(mode) {
-            case 'additive':
+            case 'additive': {
                 const sliderInputs = document.querySelectorAll('.partial-amp');
                 let amps = [];
                 let totalAmplitudeSum = 0;
@@ -240,8 +240,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     oscillators.push(osc);
                 });
                 break;
+            }
 
-            case 'am':
+            case 'am': { 
                 const carrier = audioCtx.createOscillator();
                 const modulatorFreq = audioCtx.createOscillator();
                 const modulated = audioCtx.createGain(); 
@@ -268,6 +269,32 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
                 oscillators.push(carrier, modulatorFreq);
                 break;
+            }
+
+            case 'fm': {
+                const carrier = audioCtx.createOscillator();
+                const modulatorFreq = audioCtx.createOscillator();
+                const modulationIndex = audioCtx.createGain();
+
+                const fRatio = parseFloat(document.getElementById('fmRatio').value);
+                const fIndex = parseFloat(document.getElementById('fmIndex').value);
+
+                carrier.type = 'sine';
+                carrier.frequency.setValueAtTime(data.freq, now);
+                modulatorFreq.type = 'sine';
+                modulatorFreq.frequency.setValueAtTime(data.freq * fRatio, now);
+                modulationIndex.gain.setValueAtTime(fIndex, now);
+
+                modulatorFreq.connect(modulationIndex);
+                modulationIndex.connect(carrier.frequency);
+                carrier.connect(noteGain);
+
+                carrier.start();
+                modulatorFreq.start();
+
+                oscillators.push(carrier, modulatorFreq);
+                break;
+            }
         }        
        
         activeOscillators[key] = {
